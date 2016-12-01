@@ -71,7 +71,7 @@ inline Mat_<float> load_grayscale(const string &filename) {
     original = cv::imread(filename, cv::IMREAD_GRAYSCALE); // Read the file
     if (original.empty())                      // Check for invalid input
     {
-        cerr << "Could not open or find " << filename << endl;
+        cerr << "Could not open or get_connected_components " << filename << endl;
     }
     original.convertTo(out, CV_32F);
     out /= 255.f;
@@ -110,7 +110,7 @@ inline Mat_<Vec3b> load_color(const string &filename) {
     Mat_<Vec3b> original = cv::imread(filename);
     if (original.empty())                      // Check for invalid input
     {
-        cerr << "Could not open or find " << filename << endl;
+        cerr << "Could not open or get_connected_components " << filename << endl;
     }
     return original;
 }
@@ -153,5 +153,19 @@ inline Mat_<Vec3b> convolution_with_reflection(Mat_<Vec3b> a, Mat_<float> k) {
     return result;
 }
 
+template<class T>
+Mat_<T> load_from_yaml(string filename) {
+    cv::FileStorage fs(filename, cv::FileStorage::READ);
+    Mat_<T> out;
+    fs["matrix"] >> out;
+    return out;
+}
+
+template<class T>
+void write_to_yaml(string filename, const Mat_<T> &m) {
+    cv::FileStorage fs(filename, cv::FileStorage::WRITE);
+    fs << "matrix" << m;
+    fs.release();
+}
 
 #endif //STYLIT_UTIL_H

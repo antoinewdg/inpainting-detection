@@ -51,7 +51,34 @@ struct EquivalenceTable {
 };
 
 template<class T>
-class ConnectedComponents {
+class ConnectedComponentsFinder {
+
+
+public:
+    ConnectedComponentsFinder(const Mat_<T> &image) :
+            image(image), labels(image.size()), current_label(0) {}
+
+    Mat_<int> get_connected_components() {
+
+        _first_pass();
+        _second_pass();
+
+        return labels;
+    }
+
+    vector<int> get_areas_as_vector() {
+        vector<int> areas(max_unique_label + 1, 0);
+        for (int i = 0; i < labels.rows; i++) {
+            for (int j = 0; j < labels.cols; j++) {
+                areas[labels(i, j)]++;
+            }
+        }
+
+        return areas;
+    }
+
+
+private:
 
 
     void _init_first_row_and_col() {
@@ -97,37 +124,21 @@ class ConnectedComponents {
 
     void _second_pass() {
         eq_table.compute_unique_labels(current_label + 1);
+        max_unique_label = -1;
         for (int &label : labels) {
             label = eq_table(label);
+            max_unique_label = std::max(label, max_unique_label);
         }
     }
 
-public:
-    ConnectedComponents(const Mat_<T> &image) :
-            image(image), labels(image.size()), current_label(0) {}
-
-    Mat_<int> find() {
-
-        _first_pass();
-        _second_pass();
-
-        return labels;
-    }
-
-private:
     const Mat_<T> &image;
     Mat_<int> labels;
-    int current_label;
+    int current_label, max_unique_label;
     EquivalenceTable eq_table;
 };
 
-template<class T>
-Mat_<int> label_connected_components(const Mat_<T> &image) {
-    ConnectedComponents<T> comp(image);
-    return comp.find();
-}
 
-void display_labels(const Mat_<int> &labels) {
+inline void display_labels(const Mat_<int> &labels) {
     auto it = std::max_element(labels.begin(), labels.end());
     vector<Vec3b> colors(*it + 1);
     std::random_device r;
