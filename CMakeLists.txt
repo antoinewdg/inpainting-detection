@@ -7,11 +7,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 set(SOURCE_FILES
         src/utils.h
         src/connected_components.h
+        src/detector.h
+        src/patch_distance.h
         )
 
 set(TEST_FILES
         test/test_utils.h
         test/test_connected_components.cpp
+        test/test_experimentations.cpp
         )
 
 
