@@ -5,11 +5,15 @@
 #ifndef INPAINTING_DECTECTION_DECTECTOR_H
 #define INPAINTING_DECTECTION_DECTECTOR_H
 
+#include <boost/filesystem.hpp>
 
 #include "utils.h"
+#include "misc.h"
 #include "patch_distance.h"
 #include "patch_match_core/patch_matcher.h"
 #include "patch_match_opencv/adapters.h"
+
+#include "connected_components.h"
 
 class Detector {
 
@@ -17,52 +21,63 @@ public:
     static constexpr int P = 5;
     typedef pm::opencv::WholeImagePatches PatchServer;
     typedef pm::opencv::OffsetMap2D OffsetMap;
-    typedef pm::opencv::DistanceMap2d<unsigned int> DistanceMap;
+    typedef pm::opencv::DistanceMap2d<int> DistanceMap;
     typedef pm::core::PatchMatcher<
             PatchServer, PatchServer, PatchDistance<P>,
             OffsetMap, DistanceMap
     > Matcher;
 
     Detector(string name) : m_name(name) {
-        m_image = load_color("../files/" + name + ".png");
+        m_image = load_color("../files/in/" + name);
     }
 
-    Mat_<Vec2i> build_offset_map() {
 
-        if (_offsets_file_exists()) {
-            return load_from_yaml<Vec2i>(_offsets_filename());
-        }
-        OffsetMap offset_map(m_image.size());
-        DistanceMap distance_map(m_image.size());
-        PatchServer patches(m_image.size(), P);
-        PatchDistance<P> patch_distance(m_image, 20);
-
-        Matcher matcher(patches, patches, patch_distance, offset_map, distance_map);
-        matcher.initialize_offset_map_randomly();
-        matcher.iterate_n_times(5);
-
-        write_to_yaml(_offsets_filename(), offset_map.to_mat());
-
-
-        return offset_map.to_mat();
+    void perform_operations() {
+//        ConnectedComponentsFinder<Vec2i> finder(m_offset_map);
+//        m_connected_components = finder.get_connected_components();
+        _compute_or_load_patch_match();
+        _perform_variance();
+        _perform_is_mirror();
+        _perform_suspicious_zones();
 
     }
 
-private:
-
-    string _offsets_filename() {
-        return "../files/offsets/" + m_name + ".yml";
+    inline string _get_out_filename(string dir, string ext = "png", string suffix = "") {
+        string dir_path = "../files/out/" + dir;
+        namespace fs = boost::filesystem;
+        fs::create_directories(fs::path(dir_path));
+        return dir_path + "/" + m_name + suffix + "." + ext;
     }
 
-    bool _offsets_file_exists() {
-        cv::FileStorage fs(_offsets_filename(), cv::FileStorage::READ);
+    inline Rect _get_patches_rect() {
+        return Rect(P / 2, P / 2, m_image.cols - P + 1, m_image.rows - P + 1);
+    }
+
+
+    bool _file_exists(string filename) {
+        cv::FileStorage fs(filename, cv::FileStorage::READ);
         bool exists = fs.isOpened();
         fs.release();
         return exists;
     }
 
+    void _perform_patch_match();
+
+    void _compute_or_load_patch_match();
+
+    void _perform_is_mirror();
+
+    void _perform_suspicious_zones();
+
+    void _perform_variance();
+
     Mat_<Vec3b> m_image;
     string m_name;
+    Mat_<Vec2i> m_offset_map;
+    Mat_<int> m_distance_map;
+    Mat_<int> m_connected_components;
+    Mat_<uchar> m_is_mirror;
+    Mat_<float> m_variance;
 };
 
 #endif //INPAINTING_DECTECTION_DECTECTOR_H

@@ -13,7 +13,7 @@ class PatchDistance {
 public:
     typedef Vec2i left_type;
     typedef Vec2i right_type;
-    typedef unsigned int output_type;
+    typedef int output_type;
 
     PatchDistance(Mat_<Vec3b> s, unsigned int min_offset) :
             m_s(s), m_min_sqr_offset(min_offset * min_offset) {
