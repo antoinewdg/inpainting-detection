@@ -4,4 +4,4 @@
 
 #include "misc.h"
 
-template Mat_<float> compute_patch_variance<Vec3b>(Mat_<Vec3b> m, int P);
+template Mat_<float> compute_patch_std_dev<Vec3b>(Mat_<Vec3b> m, int P);

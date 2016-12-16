@@ -56,14 +56,14 @@ void Detector::_perform_is_mirror() {
             Vec2i p(i, j);
             Vec2i q = m_offset_map(p) + p;
             Vec2i p_bis = m_offset_map(q) + q;
-            m_is_mirror(p) = uchar(255) * uchar(p == p_bis);
+            m_is_mirror(p) = uchar(255) * uchar(p == p_bis) * (m_std_dev(i, j) >= STD_DEV_THRESHOLD);
         }
     }
 
     Rect r(2, 2, m_is_mirror.cols - 4, m_is_mirror.rows - 4);
     m_is_mirror = m_is_mirror(r);
 
-    string mirror_name = _get_out_filename("is_mirror", "png", std::to_string(0));
+    string mirror_name = _get_out_filename("is_mirror", "png", "_" + std::to_string(0));
     cv::imwrite(mirror_name, m_is_mirror);
 
     std::ofstream out(_get_out_filename("granulometry", "txt"));
@@ -77,10 +77,11 @@ void Detector::_perform_is_mirror() {
         float c = float(cv::countNonZero(opening)) / M;
         out << " " << c;
         if (c != 0) {
-            string file_name = _get_out_filename("is_mirror", "png", std::to_string(n));
+            string file_name = _get_out_filename("is_mirror", "png", "_" + std::to_string(n));
             cv::imwrite(file_name, opening);
         }
     }
+
 
     out.close();
 }
@@ -91,7 +92,7 @@ void Detector::_perform_suspicious_zones() {
         for (int j = 2; j < image.cols - 2; j++) {
             image(i, j) = m_image(i, j);
             if (!m_is_mirror(i, j)) {
-                image(i, j) = image(i, j) - Vec3b(70, 70, 70);
+                image(i, j) = image(i, j) - Vec3b(70, 0, 70);
             }
         }
     }
@@ -99,8 +100,8 @@ void Detector::_perform_suspicious_zones() {
     cv::imwrite(name, image);
 }
 
-void Detector::_perform_variance() {
-    m_variance = compute_patch_variance(m_image, P);
+void Detector::_perform_std_dev() {
+    m_std_dev = compute_patch_std_dev(m_image, P);
     save_to_txt(_get_out_filename("variance"),
-                m_variance(_get_patches_rect()));
+                m_std_dev(_get_patches_rect()));
 }

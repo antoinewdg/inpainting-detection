@@ -19,6 +19,7 @@ class Detector {
 
 public:
     static constexpr int P = 5;
+    static constexpr float STD_DEV_THRESHOLD = 7.0;
     typedef pm::opencv::WholeImagePatches PatchServer;
     typedef pm::opencv::OffsetMap2D OffsetMap;
     typedef pm::opencv::DistanceMap2d<int> DistanceMap;
@@ -36,17 +37,17 @@ public:
 //        ConnectedComponentsFinder<Vec2i> finder(m_offset_map);
 //        m_connected_components = finder.get_connected_components();
         _compute_or_load_patch_match();
-        _perform_variance();
+        _perform_std_dev();
         _perform_is_mirror();
         _perform_suspicious_zones();
 
     }
 
     inline string _get_out_filename(string dir, string ext = "png", string suffix = "") {
-        string dir_path = "../files/out/" + dir;
         namespace fs = boost::filesystem;
-        fs::create_directories(fs::path(dir_path));
-        return dir_path + "/" + m_name + suffix + "." + ext;
+        string path = "../files/out/" + dir + "/" + m_name + suffix + "." + ext;
+        fs::create_directories(fs::path(path).parent_path());
+        return path;
     }
 
     inline Rect _get_patches_rect() {
@@ -69,7 +70,7 @@ public:
 
     void _perform_suspicious_zones();
 
-    void _perform_variance();
+    void _perform_std_dev();
 
     Mat_<Vec3b> m_image;
     string m_name;
@@ -77,7 +78,7 @@ public:
     Mat_<int> m_distance_map;
     Mat_<int> m_connected_components;
     Mat_<uchar> m_is_mirror;
-    Mat_<float> m_variance;
+    Mat_<float> m_std_dev;
 };
 
 #endif //INPAINTING_DECTECTION_DECTECTOR_H

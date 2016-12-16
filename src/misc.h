@@ -9,7 +9,7 @@
 #include "utils.h"
 
 template<class T>
-Mat_<float> compute_patch_variance(Mat_<T> m, int P) {
+Mat_<float> compute_patch_std_dev(Mat_<T> m, int P) {
     Mat_<float> variance(m.size(), 0);
     for (int i = 2; i < m.rows - 2; i++) {
         for (int j = 2; j < m.cols - 2; j++) {

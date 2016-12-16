@@ -20,14 +20,14 @@ def scaler(x):
 def process(name):
     global inpainted_r, original_r
 
-    target = original_r
-    if '_inpainted' in name:
-        target = inpainted_r
+    # target = original_r
+    # if '_inpainted' in name:
+    #     target = inpainted_r
 
     with open(name) as f:
         l = [float(a) for a in next(f).split(' ') if a != '' and float(a) != 0]
-        target[min(len(l), 15)] += 1
-        if len(l) >= 5:
+        # target[min(len(l), 15)] += 1
+        if (len(l) >= 4 and 'inpainted' not in name) or (len(l) < 4 and 'inpainted' in name):
             n = name.split('/')
             n[3] = 'is_mirror'
             ext = n[-1].split('.')
@@ -38,9 +38,7 @@ def process(name):
             im = cv2.imread('/'.join(n))
             cv2.imshow("dd", im)
             cv2.waitKey(0)
-            # # print(next(f).split(' '))
-            #     l = [log(500 * float(a) + 1) for a in next(f).split(' ') if a != '']
-            #     plt.plot(l, color=color)
+            # print(next(f).split(' '))
 
     color = 'b'
     if '_inpainted' in name:
@@ -55,8 +53,10 @@ def process(name):
 for f_name in file_names:
     if '_inpainted' in f_name:
         continue
-    if 'natur' in f_name or 'misc' in 'f_name' or True :
-        process(f_name)
+    # if 'natur' in f_name or 'misc' in 'f_name' or True:
+    #     process(f_name)
+    # if 'facade' not in f_name:
+    process(f_name)
 
 for f_name in file_names:
     if '_inpainted' in f_name:

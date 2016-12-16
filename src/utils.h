@@ -71,7 +71,7 @@ inline Mat_<float> load_grayscale(const string &filename) {
     original = cv::imread(filename, cv::IMREAD_GRAYSCALE); // Read the file
     if (original.empty())                      // Check for invalid input
     {
-        cerr << "Could not open or get_connected_components " << filename << endl;
+        cerr << "Could not open " << filename << endl;
     }
     original.convertTo(out, CV_32F);
     out /= 255.f;
@@ -110,7 +110,7 @@ inline Mat_<Vec3b> load_color(const string &filename) {
     Mat_<Vec3b> original = cv::imread(filename);
     if (original.empty())                      // Check for invalid input
     {
-        cerr << "Could not open or get_connected_components " << filename << endl;
+        cerr << "Could not open " << filename << endl;
     }
     return original;
 }
