@@ -96,7 +96,7 @@ void Detector::_perform_suspicious_zones() {
             }
         }
     }
-    string name = _get_out_filename("is_mirror", "png", "_99");
+    string name = _get_out_filename("suspicious", "png");
     cv::imwrite(name, image);
 }
 

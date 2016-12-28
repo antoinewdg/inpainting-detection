@@ -4,7 +4,7 @@
 #include "utils.h"
 #include "test_utils.h"
 
-TEST_CASE("Connected components") {
+TEST_CASE("Connected components", "[unit]") {
     auto image = load_test_asset("connected_components/image.png");
     auto expected_labels = load_test_asset("connected_components/labels.png");
 
