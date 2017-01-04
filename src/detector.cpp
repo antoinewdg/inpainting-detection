@@ -60,20 +60,24 @@ void Detector::_perform_is_mirror() {
         }
     }
 
+
+}
+
+void Detector::_perform_granulometry() {
     Rect r(2, 2, m_is_mirror.cols - 4, m_is_mirror.rows - 4);
-    m_is_mirror = m_is_mirror(r);
+    Mat_<bool> is_mirror = m_is_mirror(r);
 
     string mirror_name = _get_out_filename("is_mirror", "png", "_" + std::to_string(0));
-    cv::imwrite(mirror_name, m_is_mirror);
+    cv::imwrite(mirror_name, is_mirror);
 
     std::ofstream out(_get_out_filename("granulometry", "txt"));
 
-    int M = cv::countNonZero(m_is_mirror);
+    int M = cv::countNonZero(is_mirror);
 
     for (int n = 1; n < 10; n++) {
         Mat_<uchar> opening;
         auto struct_el = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(2 * n + 1, 2 * n + 1));
-        cv::morphologyEx(m_is_mirror, opening, cv::MORPH_OPEN, struct_el);
+        cv::morphologyEx(is_mirror, opening, cv::MORPH_OPEN, struct_el);
         float c = float(cv::countNonZero(opening)) / M;
         out << " " << c;
         if (c != 0) {
@@ -98,6 +102,22 @@ void Detector::_perform_suspicious_zones() {
     }
     string name = _get_out_filename("suspicious", "png");
     cv::imwrite(name, image);
+}
+
+void Detector::_perform_distance_hist() {
+    string fname = "../files/out/distances_regular.txt";
+    std::ofstream reg_out(_get_out_filename("hist_pos", "txt"));
+    std::ofstream pos_out(_get_out_filename("hist_neg", "txt"));
+
+    for (int i = P / 2; i < m_distance_map.rows - P / 2; i++) {
+        for (int j = P / 2; j < m_distance_map.cols - P / 2; j++) {
+            if (m_is_mirror(i, j)) {
+                pos_out << m_distance_map(i, j) << " ";
+            } else {
+                reg_out << m_distance_map(i, j) << " ";
+            }
+        }
+    }
 }
 
 void Detector::_perform_std_dev() {

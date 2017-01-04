@@ -30,6 +30,10 @@ public:
 
     Detector(string name) : m_name(name) {
         m_image = load_color("../files/in/" + name);
+//        display_and_block(m_image);
+        std::remove("../files/out/distances_regular.txt");
+        std::remove("../files/out/distances_true_positive.txt");
+        std::remove("../files/out/distances_false_positive.txt");
     }
 
 
@@ -39,7 +43,9 @@ public:
         _compute_or_load_patch_match();
         _perform_std_dev();
         _perform_is_mirror();
-        _perform_suspicious_zones();
+        _perform_distance_hist();
+//        _perform_granulometry();
+//        _perform_suspicious_zones();
 
     }
 
@@ -68,9 +74,13 @@ public:
 
     void _perform_is_mirror();
 
+    void _perform_granulometry();
+
     void _perform_suspicious_zones();
 
     void _perform_std_dev();
+
+    void _perform_distance_hist();
 
     Mat_<Vec3b> m_image;
     string m_name;
