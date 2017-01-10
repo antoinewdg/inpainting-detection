@@ -74,18 +74,24 @@ void Detector::_perform_granulometry() {
 
     int M = cv::countNonZero(is_mirror);
 
+    Mat_<bool> opening_5;
     for (int n = 1; n < 10; n++) {
         Mat_<uchar> opening;
         auto struct_el = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(2 * n + 1, 2 * n + 1));
         cv::morphologyEx(is_mirror, opening, cv::MORPH_OPEN, struct_el);
         float c = float(cv::countNonZero(opening)) / M;
         out << " " << c;
+        if (n == 5) {
+            opening_5 = opening;
+        }
         if (c != 0) {
             string file_name = _get_out_filename("is_mirror", "png", "_" + std::to_string(n));
             cv::imwrite(file_name, opening);
         }
     }
 
+    m_is_mirror_filtered = Mat_<bool>(m_is_mirror.size(), false);
+    hysteresis_filter(opening_5, is_mirror).copyTo(m_is_mirror_filtered(r));
 
     out.close();
 }
@@ -95,7 +101,7 @@ void Detector::_perform_suspicious_zones() {
     for (int i = 2; i < image.rows - 2; i++) {
         for (int j = 2; j < image.cols - 2; j++) {
             image(i, j) = m_image(i, j);
-            if (!m_is_mirror(i, j)) {
+            if (!m_is_mirror_filtered(i, j)) {
                 image(i, j) = image(i, j) - Vec3b(70, 0, 70);
             }
         }
@@ -105,19 +111,25 @@ void Detector::_perform_suspicious_zones() {
 }
 
 void Detector::_perform_distance_hist() {
-    string fname = "../files/out/distances_regular.txt";
-    std::ofstream reg_out(_get_out_filename("hist_pos", "txt"));
-    std::ofstream pos_out(_get_out_filename("hist_neg", "txt"));
+    std::ofstream pos_out(_get_out_filename("hist_pos", "txt"));
+//    std::ofstream neg_out(_get_out_filename("hist_neg", "txt"));
 
+    bool happened = false;
     for (int i = P / 2; i < m_distance_map.rows - P / 2; i++) {
         for (int j = P / 2; j < m_distance_map.cols - P / 2; j++) {
-            if (m_is_mirror(i, j)) {
+            if (m_is_mirror_filtered(i, j)) {
                 pos_out << m_distance_map(i, j) << " ";
-            } else {
-                reg_out << m_distance_map(i, j) << " ";
+                happened = true;
             }
         }
     }
+
+    pos_out.close();
+
+    if (!happened) {
+        std::remove(_get_out_filename("hist_pos", "txt").c_str());
+    }
+//    neg_out.close();
 }
 
 void Detector::_perform_std_dev() {

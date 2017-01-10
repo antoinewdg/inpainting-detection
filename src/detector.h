@@ -44,8 +44,8 @@ public:
         _compute_or_load_patch_match();
         _perform_std_dev();
         _perform_is_mirror();
-//        _perform_distance_hist();
         _perform_granulometry();
+        _perform_distance_hist();
         _perform_suspicious_zones();
 
     }
@@ -88,7 +88,8 @@ public:
     Mat_<Vec2i> m_offset_map;
     Mat_<int> m_distance_map;
     Mat_<int> m_connected_components;
-    Mat_<uchar> m_is_mirror;
+    Mat_<bool> m_is_mirror;
+    Mat_<bool> m_is_mirror_filtered;
     Mat_<float> m_std_dev;
 };
 
