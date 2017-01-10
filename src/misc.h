@@ -54,4 +54,6 @@ inline float estimate_noise_level(Mat_<Vec3b> &image) {
     return *mid / 3.08f;
 }
 
+Mat_<bool> hysteresis_filter(const Mat_<bool> &in_high, const Mat_<bool> &in_low);
+
 #endif //INPAINTING_DECTECTION_MISC_H

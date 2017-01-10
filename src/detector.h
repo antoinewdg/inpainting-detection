@@ -40,12 +40,13 @@ public:
     void perform_operations() {
 //        ConnectedComponentsFinder<Vec2i> finder(m_offset_map);
 //        m_connected_components = finder.get_connected_components();
+
         _compute_or_load_patch_match();
         _perform_std_dev();
         _perform_is_mirror();
-        _perform_distance_hist();
-//        _perform_granulometry();
-//        _perform_suspicious_zones();
+//        _perform_distance_hist();
+        _perform_granulometry();
+        _perform_suspicious_zones();
 
     }
 

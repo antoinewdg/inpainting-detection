@@ -16,6 +16,7 @@ set(TEST_FILES
         test/test_utils.h
         test/test_connected_components.cpp
         test/test_experimentations.cpp
+        test/test_misc.cpp
         )
 
 

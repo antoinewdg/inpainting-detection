@@ -11,7 +11,7 @@ file_names = glob.glob(folder + "**/*.txt")
 inpainted_r = [[] for _ in range(16)]
 original_r = [[] for _ in range(16)]
 
-file_names = [n for n in file_names if 'misc' in n and 'noisy_12.5' in n]
+file_names = [n for n in file_names if 'misc' in n]
 
 
 def scaler(x):
