@@ -10,15 +10,16 @@
 #include "utils.h"
 
 template<class T>
-Mat_<float> compute_patch_std_dev(Mat_<T> m, int P) {
+Mat_<float> compute_patch_variance(Mat_<T> m, int P) {
     Mat_<float> variance(m.size(), 0);
     for (int i = 2; i < m.rows - 2; i++) {
         for (int j = 2; j < m.cols - 2; j++) {
             Rect r(j - 2, i - 2, P, P);
             cv::Scalar mean = cv::mean(m(r));
-            variance(i, j) = float(cv::norm(m(r) - mean, cv::NORM_L2));
+            variance(i, j) = float(cv::norm(m(r) - mean, cv::NORM_L2SQR));
         }
     }
+    variance /= (P * P);
     return variance;
 }
 
@@ -35,24 +36,9 @@ void save_to_txt(string filename, Mat_<T> m) {
     out.close();
 }
 
-inline float estimate_noise_level(Mat_<Vec3b> &image) {
-    Mat_<float> kernel(2, 2, 1.f);
-    kernel(0, 1) = -1.f;
-    kernel(1, 0) = -1.f;
-    Mat_<Vec3f> convolution;
-    cv::filter2D(image, convolution, CV_32FC3, kernel);
-    Mat_<float> result(convolution.size());
-    auto it = result.begin();
-    for (Vec3f &c : convolution) {
-        *it = cv::norm(c, cv::NORM_L2);
-        it++;
-    }
-    auto begin = result.begin();
-    auto mid = begin + ((result.rows * result.cols) / 2);
-    auto end = result.end();
-    std::nth_element(begin, mid, end);
-    return *mid / 3.08f;
-}
+float estimate_noise_level(const Mat_<Vec3b> &image);
+
+Mat_<float> estimate_local_noise_level(Mat_<Vec3b> image, int w);
 
 Mat_<bool> hysteresis_filter(const Mat_<bool> &in_high, const Mat_<bool> &in_low);
 

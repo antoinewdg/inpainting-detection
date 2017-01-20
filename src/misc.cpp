@@ -4,7 +4,7 @@
 
 #include "misc.h"
 
-template Mat_<float> compute_patch_std_dev<Vec3b>(Mat_<Vec3b> m, int P);
+template Mat_<float> compute_patch_variance<Vec3b>(Mat_<Vec3b> m, int P);
 
 
 void _propagate_hysteresis(Mat_<bool> &out, const Mat_<bool> &in_low, int i, int j) {
@@ -18,6 +18,25 @@ void _propagate_hysteresis(Mat_<bool> &out, const Mat_<bool> &in_low, int i, int
     _propagate_hysteresis(out, in_low, i, j + 1);
 }
 
+float estimate_noise_level(const Mat_<Vec3b> &image) {
+    Mat_<float> kernel(2, 2, 1.f);
+    kernel(0, 1) = -1.f;
+    kernel(1, 0) = -1.f;
+    Mat_<Vec3f> convolution;
+    cv::filter2D(image, convolution, CV_32FC3, kernel);
+    Mat_<float> result(convolution.size());
+    auto it = result.begin();
+    for (Vec3f &c : convolution) {
+        *it = cv::norm(c, cv::NORM_L2);
+        it++;
+    }
+    auto begin = result.begin();
+    auto mid = begin + ((result.rows * result.cols) / 2);
+    auto end = result.end();
+    std::nth_element(begin, mid, end);
+    return *mid / 3.08f;
+}
+
 Mat_<bool> hysteresis_filter(const Mat_<bool> &in_high, const Mat_<bool> &in_low) {
     Mat_<bool> out(in_high.size(), false);
     for (int i = 0; i < out.rows; i++) {
@@ -29,4 +48,18 @@ Mat_<bool> hysteresis_filter(const Mat_<bool> &in_high, const Mat_<bool> &in_low
     }
 
     return out;
+}
+
+Mat_<float> estimate_local_noise_level(Mat_<Vec3b> image, int w) {
+    Mat_<Vec3b> img_with_borders;
+    Mat_<float> result(image.size());
+
+    cv::copyMakeBorder(image, img_with_borders, w, w, w, w, cv::BORDER_REFLECT101);
+
+    for (int i = 0; i < result.rows; i++) {
+        for (int j = 0; j < result.cols; j++) {
+            result(i, j) = estimate_noise_level(img_with_borders(cv::Rect(j, i, 2 * w + 1, 2 * w + 1)));
+        }
+    }
+    return result;
 }

@@ -49,59 +49,63 @@ void Detector::_compute_or_load_patch_match() {
     _perform_patch_match();
 }
 
-void Detector::_perform_is_mirror() {
-    m_is_mirror = Mat_<uchar>(m_offset_map.size(), 0);
+void Detector::_perform_symmetry_map() {
+    m_symmetry_map = Mat_<bool>(m_offset_map.size(), 0);
     for (int i = 2; i < m_offset_map.rows - 2; i++) {
         for (int j = 2; j < m_offset_map.cols - 2; j++) {
             Vec2i p(i, j);
             Vec2i q = m_offset_map(p) + p;
             Vec2i p_bis = m_offset_map(q) + q;
-            m_is_mirror(p) = uchar(255) * uchar(p == p_bis) * (m_std_dev(i, j) >= STD_DEV_THRESHOLD);
+            m_symmetry_map(p) = uchar(255) * uchar(p == p_bis) * (m_variance(i, j) >= VARIANCE_THRESHOLD);
         }
     }
+
+
+    string filename = _get_out_filename("symmetry_map", "png");
+    cv::imwrite(filename, 255 * m_symmetry_map);
 
 
 }
 
 void Detector::_perform_granulometry() {
-    Rect r(2, 2, m_is_mirror.cols - 4, m_is_mirror.rows - 4);
-    Mat_<bool> is_mirror = m_is_mirror(r);
+    Rect r(2, 2, m_symmetry_map.cols - 4, m_symmetry_map.rows - 4);
+    Mat_<bool> sym_map = m_symmetry_map(r);
 
-    string mirror_name = _get_out_filename("is_mirror", "png", "_" + std::to_string(0));
-    cv::imwrite(mirror_name, is_mirror);
+    string sym_name = _get_out_filename("symmetry_map", "png", "_" + std::to_string(0));
+    cv::imwrite(sym_name, sym_map);
 
     std::ofstream out(_get_out_filename("granulometry", "txt"));
 
-    int M = cv::countNonZero(is_mirror);
+    int M = cv::countNonZero(sym_map);
 
-    Mat_<bool> opening_5;
     for (int n = 1; n < 10; n++) {
         Mat_<uchar> opening;
         auto struct_el = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(2 * n + 1, 2 * n + 1));
-        cv::morphologyEx(is_mirror, opening, cv::MORPH_OPEN, struct_el);
+        cv::morphologyEx(sym_map, opening, cv::MORPH_OPEN, struct_el);
         float c = float(cv::countNonZero(opening)) / M;
         out << " " << c;
-        if (n == 5) {
-            opening_5 = opening;
-        }
         if (c != 0) {
             string file_name = _get_out_filename("is_mirror", "png", "_" + std::to_string(n));
             cv::imwrite(file_name, opening);
         }
     }
 
-    m_is_mirror_filtered = Mat_<bool>(m_is_mirror.size(), false);
-    hysteresis_filter(opening_5, is_mirror).copyTo(m_is_mirror_filtered(r));
 
     out.close();
 }
 
 void Detector::_perform_suspicious_zones() {
+    int d = 2 * 5 + 1;
+    auto struct_el = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(d, d));
+    Mat_<bool> opening;
+    cv::morphologyEx(m_symmetry_map, opening, cv::MORPH_OPEN, struct_el);
+    m_suspicious_zones = hysteresis_filter(opening, m_symmetry_map);
+
     Mat_<Vec3b> image(m_image.size());
     for (int i = 2; i < image.rows - 2; i++) {
         for (int j = 2; j < image.cols - 2; j++) {
             image(i, j) = m_image(i, j);
-            if (!m_is_mirror_filtered(i, j)) {
+            if (!m_suspicious_zones(i, j)) {
                 image(i, j) = image(i, j) - Vec3b(70, 0, 70);
             }
         }
@@ -117,7 +121,7 @@ void Detector::_perform_distance_hist() {
     bool happened = false;
     for (int i = P / 2; i < m_distance_map.rows - P / 2; i++) {
         for (int j = P / 2; j < m_distance_map.cols - P / 2; j++) {
-            if (m_is_mirror_filtered(i, j)) {
+            if (m_suspicious_zones(i, j)) {
                 pos_out << m_distance_map(i, j) << " ";
                 happened = true;
             }
@@ -133,7 +137,7 @@ void Detector::_perform_distance_hist() {
 }
 
 void Detector::_perform_std_dev() {
-    m_std_dev = compute_patch_std_dev(m_image, P);
+    m_variance = compute_patch_variance(m_image, P);
     save_to_txt(_get_out_filename("variance"),
-                m_std_dev(_get_patches_rect()));
+                m_variance(_get_patches_rect()));
 }

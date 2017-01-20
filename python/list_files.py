@@ -18,7 +18,7 @@ file_names.sort(key=key_f)
 
 # file_names = [INPUT_DIR + '/misc/bus_sky.png']
 
-file_names = [name[len(INPUT_DIR) + 1:] for name in file_names if '_big' not in name]
+file_names = [name[len(INPUT_DIR) + 1:] for name in file_names if '_big' not in name and 'reddit' in name]
 
 # file_names = [name for name in file_names if 'temple' in name]
 

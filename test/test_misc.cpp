@@ -22,3 +22,14 @@ TEST_CASE("Noise estimation", "[unit]") {
         REQUIRE(err < 0.05);
     }
 }
+
+TEST_CASE("Local noise estimation", "[unit]") {
+    Mat_<Vec3b> im = load_test_asset("misc/local_noises.png");
+    Mat_<float> n = estimate_local_noise_level(im, 20);
+
+    REQUIRE(n(25, 25) == Approx(10).epsilon(0.5));
+    REQUIRE(n(25, 75) == Approx(7.5).epsilon(0.5));
+    REQUIRE(n(75, 25) == Approx(5).epsilon(0.5));
+    REQUIRE(n(75, 75) == Approx(2.5).epsilon(0.5));
+
+}

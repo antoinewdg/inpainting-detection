@@ -19,7 +19,7 @@ class Detector {
 
 public:
     static constexpr int P = 5;
-    static constexpr float STD_DEV_THRESHOLD = 7.0;
+    static constexpr float VARIANCE_THRESHOLD = 0.f;//49.f / 25.f;
     typedef pm::opencv::WholeImagePatches PatchServer;
     typedef pm::opencv::OffsetMap2D OffsetMap;
     typedef pm::opencv::DistanceMap2d<int> DistanceMap;
@@ -43,9 +43,9 @@ public:
 
         _compute_or_load_patch_match();
         _perform_std_dev();
-        _perform_is_mirror();
-        _perform_granulometry();
-        _perform_distance_hist();
+        _perform_symmetry_map();
+//        _perform_granulometry();
+//        _perform_distance_hist();
         _perform_suspicious_zones();
 
     }
@@ -73,7 +73,7 @@ public:
 
     void _compute_or_load_patch_match();
 
-    void _perform_is_mirror();
+    void _perform_symmetry_map();
 
     void _perform_granulometry();
 
@@ -88,9 +88,9 @@ public:
     Mat_<Vec2i> m_offset_map;
     Mat_<int> m_distance_map;
     Mat_<int> m_connected_components;
-    Mat_<bool> m_is_mirror;
-    Mat_<bool> m_is_mirror_filtered;
-    Mat_<float> m_std_dev;
+    Mat_<bool> m_symmetry_map;
+    Mat_<bool> m_suspicious_zones;
+    Mat_<float> m_variance;
 };
 
 #endif //INPAINTING_DECTECTION_DECTECTOR_H
