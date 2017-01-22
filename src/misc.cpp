@@ -37,6 +37,22 @@ float estimate_noise_level(const Mat_<Vec3b> &image) {
     return *mid / 3.08f;
 }
 
+
+float estimate_glocal_noise_level(const Mat_<Vec3b> &image, int w) {
+    int l = 2 * w + 1;
+    Mat_<float> local_noises(image.rows / l, image.cols / l);
+    for (int i = 0; i < local_noises.rows; i++) {
+        for (int j = 0; j < local_noises.cols; j++) {
+            cv::Rect r(j * l, i * l, l, l);
+            local_noises(i, j) = estimate_noise_level(image(r));
+        }
+    }
+
+    auto min_it = std::min_element(local_noises.begin(), local_noises.end());
+    return *min_it;
+}
+
+
 Mat_<bool> hysteresis_filter(const Mat_<bool> &in_high, const Mat_<bool> &in_low) {
     Mat_<bool> out(in_high.size(), false);
     for (int i = 0; i < out.rows; i++) {

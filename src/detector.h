@@ -45,8 +45,8 @@ public:
         _perform_std_dev();
         _perform_symmetry_map();
 //        _perform_granulometry();
-//        _perform_distance_hist();
         _perform_suspicious_zones();
+        _perform_distance_hist();
 
     }
 

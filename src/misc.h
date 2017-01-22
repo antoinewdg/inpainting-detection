@@ -38,6 +38,8 @@ void save_to_txt(string filename, Mat_<T> m) {
 
 float estimate_noise_level(const Mat_<Vec3b> &image);
 
+float estimate_glocal_noise_level(const Mat_<Vec3b> &image, int w = 50);
+
 Mat_<float> estimate_local_noise_level(Mat_<Vec3b> image, int w);
 
 Mat_<bool> hysteresis_filter(const Mat_<bool> &in_high, const Mat_<bool> &in_low);
