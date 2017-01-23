@@ -56,7 +56,7 @@ bool Detector::_is_patch_symmetric(int i, int j) {
     Vec2i p(i, j);
     Vec2i q = m_offset_map(p) + p;
     Vec2i p_bis = m_offset_map(q) + q;
-    return p_bis == q;
+    return p_bis == p;
 }
 
 void Detector::_perform_symmetry_map() {
@@ -74,26 +74,37 @@ void Detector::_perform_symmetry_map() {
 
 }
 
-void Detector::_perform_granulometry() {
-    Rect r(2, 2, m_symmetry_map.cols - 4, m_symmetry_map.rows - 4);
-    Mat_<bool> sym_map = m_symmetry_map(r);
+inline string n_to_str(int n, int n_digits) {
+    int k = 0;
+    for (int m = n; m > 0; m /= 10) {
+        k++;
+    }
 
-    string sym_name = _get_out_filename("symmetry_map", "png", "_" + std::to_string(0));
-    cv::imwrite(sym_name, sym_map);
+    return string(n_digits - k, '0') + std::to_string(n);
+
+
+}
+
+void Detector::_perform_granulometry() {
+//    Rect r(2, 2, m_symmetry_map.cols - 4, m_symmetry_map.rows - 4);
+//    Mat_<bool> sym_map = m_symmetry_map(r);
+
+    string sym_name = _get_out_filename("granulometry", "png", "_00");
+    cv::imwrite(sym_name, 255 * m_symmetry_map);
 
     std::ofstream out(_get_out_filename("granulometry", "txt"));
 
-    int M = cv::countNonZero(sym_map);
+    int M = cv::countNonZero(m_symmetry_map);
 
     for (int n = 1; n < 10; n++) {
         Mat_<uchar> opening;
         auto struct_el = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(2 * n + 1, 2 * n + 1));
-        cv::morphologyEx(sym_map, opening, cv::MORPH_OPEN, struct_el);
+        cv::morphologyEx(m_symmetry_map, opening, cv::MORPH_OPEN, struct_el);
         float c = float(cv::countNonZero(opening)) / M;
         out << " " << c;
         if (c != 0) {
-            string file_name = _get_out_filename("is_mirror", "png", "_" + std::to_string(n));
-            cv::imwrite(file_name, opening);
+            string file_name = _get_out_filename("granulometry", "png", "_" + n_to_str(n, 2));
+            cv::imwrite(file_name, 255 * opening);
         }
     }
 
@@ -119,6 +130,8 @@ void Detector::_perform_suspicious_zones() {
     }
     string name = _get_out_filename("suspicious", "png");
     cv::imwrite(name, image);
+    name = _get_out_filename("symmetry_map_clean", "png");
+    cv::imwrite(name, 255 * m_suspicious_zones);
 }
 
 void Detector::_perform_distance_hist() {
