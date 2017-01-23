@@ -47,6 +47,7 @@ public:
 //        _perform_granulometry();
         _perform_suspicious_zones();
         _perform_distance_hist();
+        _perform_noise_estimation();
 
     }
 
@@ -82,6 +83,8 @@ public:
     void _perform_std_dev();
 
     void _perform_distance_hist();
+
+    void _perform_noise_estimation();
 
     Mat_<Vec3b> m_image;
     string m_name;

@@ -115,22 +115,27 @@ void Detector::_perform_suspicious_zones() {
 }
 
 void Detector::_perform_distance_hist() {
-    std::ofstream pos_out(_get_out_filename("hist_pos", "txt"));
-//    std::ofstream neg_out(_get_out_filename("hist_neg", "txt"));
+    std::ofstream symmetric(_get_out_filename("hist_symmetric", "txt"));
+    std::ofstream asymmetric(_get_out_filename("hist_asymmetric", "txt"));
+    std::ofstream all(_get_out_filename("hist_all", "txt"));
 
-    bool happened = false;
+    bool found_sym = false;
     for (int i = P / 2; i < m_distance_map.rows - P / 2; i++) {
         for (int j = P / 2; j < m_distance_map.cols - P / 2; j++) {
             if (m_suspicious_zones(i, j)) {
-                pos_out << m_distance_map(i, j) << " ";
-                happened = true;
+                symmetric << m_distance_map(i, j) << " ";
+                found_sym = true;
+            } else {
+                asymmetric << m_distance_map(i, j) << " ";
             }
+            all << m_distance_map(i, j) << " ";
         }
     }
 
-    pos_out.close();
+    symmetric.close();
+    asymmetric.close();
 
-    if (!happened) {
+    if (!found_sym) {
         std::remove(_get_out_filename("hist_pos", "txt").c_str());
     }
 //    neg_out.close();
@@ -140,4 +145,12 @@ void Detector::_perform_std_dev() {
     m_variance = compute_patch_variance(m_image, P);
     save_to_txt(_get_out_filename("variance"),
                 m_variance(_get_patches_rect()));
+}
+
+void Detector::_perform_noise_estimation() {
+    float noise = estimate_glocal_noise_level(m_image);
+    string filename = _get_out_filename("noise", "txt");
+    std::ofstream out(filename);
+    out << noise;
+    out.close();
 }
