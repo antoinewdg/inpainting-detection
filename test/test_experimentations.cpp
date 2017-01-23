@@ -52,3 +52,31 @@ TEST_CASE("NNF consistency", "[exp]") {
     }
 
 }
+
+TEST_CASE("Symmetry consistency", "[exp]") {
+
+    std::ifstream index("../files/in/index.txt");
+    string name;
+    while (std::getline(index, name)) {
+        cout << name << endl;
+        Detector detector(name);
+        detector._compute_or_load_patch_match();
+        detector._perform_std_dev();
+        detector._perform_symmetry_map();
+        for (int i = 2; i < detector.m_image.rows - 2; i++) {
+            for (int j = 2; j < detector.m_image.cols - 2; j++) {
+                if (!detector.m_symmetry_map(i, j)) {
+                    continue;
+                }
+                Vec2i p(i, j);
+                auto q = detector.m_offset_map(p) + p;
+                auto p_bis = detector.m_offset_map(q) + q;
+                REQUIRE(detector.m_symmetry_map(q));
+                REQUIRE(p_bis == p);
+
+            }
+        }
+
+    }
+
+}
