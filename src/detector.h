@@ -5,6 +5,8 @@
 #ifndef INPAINTING_DECTECTION_DECTECTOR_H
 #define INPAINTING_DECTECTION_DECTECTOR_H
 
+#include <unordered_set>
+
 #include <boost/filesystem.hpp>
 
 #include "utils.h"
@@ -38,8 +40,6 @@ public:
 
 
     void perform_operations() {
-//        ConnectedComponentsFinder<Vec2i> finder(m_offset_map);
-//        m_connected_components = finder.get_connected_components();
 
         _compute_or_load_patch_match();
         _perform_std_dev();
@@ -48,6 +48,8 @@ public:
         _perform_suspicious_zones();
         _perform_distance_hist();
         _perform_noise_estimation();
+        _perform_connected_components();
+        _perform_distance_map();
 
     }
 
@@ -86,6 +88,10 @@ public:
 
     void _perform_noise_estimation();
 
+    void _perform_connected_components();
+
+    void _perform_distance_map();
+
     Mat_<Vec3b> m_image;
     string m_name;
     Mat_<Vec2i> m_offset_map;
@@ -94,6 +100,9 @@ public:
     Mat_<bool> m_symmetry_map;
     Mat_<bool> m_suspicious_zones;
     Mat_<float> m_variance;
+
+private:
+    bool _is_patch_symmetric(int i, int j);
 };
 
 #endif //INPAINTING_DECTECTION_DECTECTOR_H

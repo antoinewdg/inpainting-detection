@@ -49,14 +49,21 @@ void Detector::_compute_or_load_patch_match() {
     _perform_patch_match();
 }
 
+bool Detector::_is_patch_symmetric(int i, int j) {
+    if (m_variance(i, j) < VARIANCE_THRESHOLD) {
+        return false;
+    }
+    Vec2i p(i, j);
+    Vec2i q = m_offset_map(p) + p;
+    Vec2i p_bis = m_offset_map(q) + q;
+    return p_bis == q;
+}
+
 void Detector::_perform_symmetry_map() {
     m_symmetry_map = Mat_<bool>(m_offset_map.size(), 0);
     for (int i = 2; i < m_offset_map.rows - 2; i++) {
         for (int j = 2; j < m_offset_map.cols - 2; j++) {
-            Vec2i p(i, j);
-            Vec2i q = m_offset_map(p) + p;
-            Vec2i p_bis = m_offset_map(q) + q;
-            m_symmetry_map(p) = uchar(255) * uchar(p == p_bis) * (m_variance(i, j) >= VARIANCE_THRESHOLD);
+            m_symmetry_map(i, j) = uchar(255) * _is_patch_symmetric(i, j);
         }
     }
 
@@ -153,4 +160,38 @@ void Detector::_perform_noise_estimation() {
     std::ofstream out(filename);
     out << noise;
     out.close();
+}
+
+void Detector::_perform_connected_components() {
+    ConnectedComponentsFinder<Vec2i> finder(m_offset_map);
+    m_connected_components = finder.get_connected_components();
+    auto image = connected_comnents_to_image(m_connected_components);
+    string filename = _get_out_filename("suspicious", "png", "_cc");
+    cv::imwrite(filename, image);
+}
+
+void Detector::_perform_distance_map() {
+    Mat_<Vec3b> out(m_image.size(), Vec3f(0, 0, 0));
+
+    float max_d = 0.f;
+    for (int i = 2; i < m_distance_map.rows - 2; i++) {
+        for (int j = 2; j < m_distance_map.cols - 2; j++) {
+            float d = std::sqrt(m_distance_map(i, j));
+            max_d = std::max(max_d, d);
+            out(i, j) = Vec3f(d, d, d);
+        }
+    }
+
+    out /= (max_d / 255.f);
+
+    for (int i = 2; i < m_distance_map.rows - 2; i++) {
+        for (int j = 2; j < m_distance_map.cols - 2; j++) {
+            if (out(i, j)[0] == 0 && m_variance(i, j) >= VARIANCE_THRESHOLD) {
+                out(i, j) = Vec3f(255, 0, 255);
+            }
+        }
+    }
+
+    string name = _get_out_filename("suspicious", "png", "_dm");
+    cv::imwrite(name, out);
 }

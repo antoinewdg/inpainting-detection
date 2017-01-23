@@ -137,13 +137,12 @@ private:
     EquivalenceTable eq_table;
 };
 
-
-inline void display_labels(const Mat_<int> &labels) {
+inline Mat_<Vec3b> connected_comnents_to_image(const Mat_<int> &labels) {
     auto it = std::max_element(labels.begin(), labels.end());
     vector<Vec3b> colors(*it + 1);
     std::random_device r;
     std::default_random_engine generator(r());
-    std::uniform_int_distribution<int> hue_dist(0, 255);
+    std::uniform_int_distribution<uchar> hue_dist(0, 255);
     for (Vec3b &c : colors) {
         c = Vec3b(hue_dist(generator), 255, 255);
     }
@@ -156,7 +155,11 @@ inline void display_labels(const Mat_<int> &labels) {
     }
 
     cv::cvtColor(result, result, cv::COLOR_HSV2BGR);
-    display_and_block(result);
+    return result;
+}
+
+inline void display_labels(const Mat_<int> &labels) {
+    display_and_block(connected_comnents_to_image(labels));
 }
 
 
