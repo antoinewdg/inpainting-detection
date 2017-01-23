@@ -30,3 +30,25 @@ TEST_CASE("Visualize local noise", "[exp]") {
     out.close();
     display_and_block(Mat_<float>(noise / 15.f));
 }
+
+TEST_CASE("NNF consistency", "[exp]") {
+
+    std::ifstream index("../files/in/index.txt");
+    string name;
+    while (std::getline(index, name)) {
+        cout << name << endl;
+        Detector detector(name);
+        detector._compute_or_load_patch_match();
+        for (int i = 2; i < detector.m_image.rows - 2; i++) {
+            for (int j = 2; j < detector.m_image.cols - 2; j++) {
+                Vec2i p(i, j);
+                auto q = detector.m_offset_map(p) + p;
+                if (q[0] < 2 || q[1] < 2 || q[0] >= detector.m_image.rows - 2 || q[1] >= detector.m_image.cols - 2) {
+                    FAIL("q=" << q << " is not in NNF");
+                }
+            }
+        }
+
+    }
+
+}
