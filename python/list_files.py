@@ -19,9 +19,10 @@ file_names.sort(key=key_f)
 # file_names = [INPUT_DIR + '/misc/bus_sky.png']
 
 file_names = [name[len(INPUT_DIR) + 1:] for name in file_names if '_big' not in name]
-file_names = [n for n in file_names if 'facade' not in n]
+# file_names = [n for n in file_names if 'facade' not in n and 'special_case' not in n]
 
-# file_names = [name for name in file_names if 'temple' in name]
+# file_names = [name for name in file_names if 'grip' in name]
+file_names = [name for name in file_names if 'misc' in name]
 
 with open(INPUT_DIR + "/index.txt", 'w') as f:
     f.write('\n'.join(file_names))

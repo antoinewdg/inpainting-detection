@@ -44,4 +44,6 @@ Mat_<float> estimate_local_noise_level(Mat_<Vec3b> image, int w);
 
 Mat_<bool> hysteresis_filter(const Mat_<bool> &in_high, const Mat_<bool> &in_low);
 
+Mat_<bool> hysteresis_connected(const Mat_<bool> &symmetry_map, const Mat_<int> &labels);
+
 #endif //INPAINTING_DECTECTION_MISC_H

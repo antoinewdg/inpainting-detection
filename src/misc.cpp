@@ -79,3 +79,26 @@ Mat_<float> estimate_local_noise_level(Mat_<Vec3b> image, int w) {
     }
     return result;
 }
+
+void _propagate_hysteresis_connected(Mat_<bool> &out, const Mat_<int> &labels, int l, int i, int j) {
+    if (i < 0 || j < 0 || i >= out.rows || j >= out.cols || out(i, j) || labels(i, j) != l) {
+        return;
+    }
+    out(i, j) = true;
+    _propagate_hysteresis_connected(out, labels, l, i - 1, j);
+    _propagate_hysteresis_connected(out, labels, l, i, j - 1);
+    _propagate_hysteresis_connected(out, labels, l, i + 1, j);
+    _propagate_hysteresis_connected(out, labels, l, i, j + 1);
+}
+
+Mat_<bool> hysteresis_connected(const Mat_<bool> &symmetry_map, const Mat_<int> &labels) {
+    Mat_<bool> out(symmetry_map.size(), false);
+    for (int i = 0; i < out.rows; i++) {
+        for (int j = 0; j < out.cols; j++) {
+            if (symmetry_map(i, j)) {
+                _propagate_hysteresis_connected(out, labels, labels(i, j), i, j);
+            }
+        }
+    }
+    return out;
+}

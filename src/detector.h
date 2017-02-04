@@ -43,12 +43,12 @@ public:
 
         _compute_or_load_patch_match();
         _perform_std_dev();
+        _perform_connected_components();
         _perform_symmetry_map();
-        _perform_granulometry();
+//        _perform_granulometry();
         _perform_suspicious_zones();
-        _perform_distance_hist();
-        _perform_noise_estimation();
-//        _perform_connected_components();
+//        _perform_distance_hist();
+//        _perform_noise_estimation();
 //        _perform_distance_map();
 
     }

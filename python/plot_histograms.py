@@ -26,16 +26,17 @@ def plt_hist(name, dir, c, bins):
     # print(bins)
     hist, bins = np.histogram(data, bins=bins, density=True)
     x = [(b + bins[i + 1]) // 2 for i, b in enumerate(bins[:-1])]
-    m = np.max(hist)
-    i = len(x)
-    while hist[i - 1] <= 0.05 * m:
-        i -= 1
+    # m = np.max(hist)
+    # i = len(x)
+    # while hist[i - 1] <= 0.05 * m:
+    #     i -= 1
 
-    hist = hist[:i]
-    hist /= np.sum(hist)
+    # hist = hist[:i]
+    # hist /= np.sum(hist)
 
     # x = [a for i, a in enumerate(x) if hist[i] >= 0.05 * m]
-    plt.bar(x[:i], hist, width=x[1] - x[0])
+    plt.plot(x, hist)
+    # plt.bar(x, hist, width=x[1] - x[0])
     return bins
 
 
@@ -49,16 +50,16 @@ for name in file_names:
     # print(get_full_name(name, 'hist_symmetric', 'txt'))
     sigma = get_noise(name)
     print(name, sigma)
-    if sigma == 0:
-        continue
-    expected = np.sqrt(2 * (sigma ** 2) * np.random.chisquare(75, 10000))
+    # if sigma == 0:
+    #     continue
+    # expected = np.sqrt(2 * (sigma ** 2) * np.random.chisquare(75, 10000))
 
-    hist, bins = np.histogram(expected, bins=100, density=True)
-    x = [(b + bins[i + 1]) / 2 for i, b in enumerate(bins[:-1])]
-    plt_hist(name, 'hist_symmetric', 'auto', 'auto')
+    # hist, bins = np.histogram(expected, bins=100, density=True)
+    # x = [(b + bins[i + 1]) / 2 for i, b in enumerate(bins[:-1])]
+    plt_hist(name, 'hist_symmetric', 'b', 'auto')
     plt.show()
-    plt.bar(x, hist, width=x[1] - x[0])
-    plt.show()
+    # plt.bar(x, hist, width=x[1] - x[0])
+    # plt.show()
     # print(clean_name(name))
     # # reg_name = name.split('/')
     # # reg_name[3] = 'hist_neg'

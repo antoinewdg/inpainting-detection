@@ -27,9 +27,9 @@ void Detector::_perform_patch_match() {
     m_distance_map = distance_map.to_mat();
 
 
-    write_to_yaml(_get_out_filename("offsets", "yml"), m_offset_map);
-    write_to_yaml(_get_out_filename("distances", "yml"), m_distance_map);
-    save_to_txt(_get_out_filename("distances", "txt"), m_distance_map);
+//    write_to_yaml(_get_out_filename("offsets", "yml"), m_offset_map);
+//    write_to_yaml(_get_out_filename("distances", "yml"), m_distance_map);
+//    save_to_txt(_get_out_filename("distances", "txt"), m_distance_map);
 
 }
 
@@ -96,17 +96,61 @@ void Detector::_perform_granulometry() {
 
     int M = cv::countNonZero(m_symmetry_map);
 
-    for (int n = 1; n < 10; n++) {
-        Mat_<uchar> opening;
-        auto struct_el = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(2 * n + 1, 2 * n + 1));
-        cv::morphologyEx(m_symmetry_map, opening, cv::MORPH_OPEN, struct_el);
-        float c = float(cv::countNonZero(opening)) / M;
-        out << " " << c;
-        if (c != 0) {
-            string file_name = _get_out_filename("granulometry", "png", "_" + n_to_str(n, 2));
-            cv::imwrite(file_name, 255 * opening);
-        }
-    }
+    Mat_<uchar> opening;
+    auto struct_el = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
+    cv::morphologyEx(m_symmetry_map, opening, cv::MORPH_OPEN, struct_el);
+    string file_name = _get_out_filename("granulometry", "png", "_010");
+    cv::imwrite(file_name, 255 * opening);
+
+    Mat_<bool> res;
+    cv::medianBlur(opening, res, 5);
+    file_name = _get_out_filename("granulometry", "png", "_015");
+    cv::imwrite(file_name, 255 * res);
+
+    cv::medianBlur(opening, res, 7);
+    file_name = _get_out_filename("granulometry", "png", "_017");
+    cv::imwrite(file_name, 255 * res);
+
+    cv::medianBlur(opening, res, 9);
+    file_name = _get_out_filename("granulometry", "png", "_019");
+    cv::imwrite(file_name, 255 * res);
+//    cv::morphologyEx(opening, opening, cv::MORPH_CLOSE, struct_el);
+//    file_name = _get_out_filename("granulometry", "png", "_011");
+//    cv::imwrite(file_name, 255 * opening);
+//
+//    opening = hysteresis_connected(opening, m_connected_components);
+//    file_name = _get_out_filename("granulometry", "png", "_020");
+//    cv::imwrite(file_name, 255 * opening);
+//
+    file_name = _get_out_filename("granulometry", "png", "_099");
+    cv::imwrite(file_name, m_image);
+//
+//    struct_el = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(11, 11));
+//    cv::morphologyEx(m_symmetry_map, opening, cv::MORPH_OPEN, struct_el);
+//    file_name = _get_out_filename("granulometry", "png", "_030");
+//    cv::imwrite(file_name, 255 * opening);
+
+//    struct_el = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5));
+//    cv::morphologyEx(opening, opening, cv::MORPH_OPEN, struct_el);
+//    file_name = _get_out_filename("granulometry", "png", "_020");
+//    cv::imwrite(file_name, 255 * opening);
+//
+//    cv::morphologyEx(opening, opening, cv::MORPH_CLOSE, struct_el);
+//    file_name = _get_out_filename("granulometry", "png", "_021");
+//    cv::imwrite(file_name, 255 * opening);
+
+
+//    for (int n = 1; n < 10; n++) {
+//        Mat_<uchar> opening;
+//        auto struct_el = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(2 * n + 1, 2 * n + 1));
+//        cv::morphologyEx(m_symmetry_map, opening, cv::MORPH_OPEN, struct_el);
+//        float c = float(cv::countNonZero(opening)) / M;
+//        out << " " << c;
+//        if (c != 0) {
+//            string file_name = _get_out_filename("granulometry", "png", "_" + n_to_str(n, 2) + '0');
+//            cv::imwrite(file_name, 255 * opening);
+//        }
+//    }
 
 
     out.close();
@@ -163,8 +207,8 @@ void Detector::_perform_distance_hist() {
 
 void Detector::_perform_std_dev() {
     m_variance = compute_patch_variance(m_image, P);
-    save_to_txt(_get_out_filename("variance"),
-                m_variance(_get_patches_rect()));
+//    save_to_txt(_get_out_filename("variance"),
+//                m_variance(_get_patches_rect()));
 }
 
 void Detector::_perform_noise_estimation() {
@@ -179,7 +223,7 @@ void Detector::_perform_connected_components() {
     ConnectedComponentsFinder<Vec2i> finder(m_offset_map);
     m_connected_components = finder.get_connected_components();
     auto image = connected_comnents_to_image(m_connected_components);
-    string filename = _get_out_filename("suspicious", "png", "_cc");
+    string filename = _get_out_filename("connected_components", "png");
     cv::imwrite(filename, image);
 }
 
