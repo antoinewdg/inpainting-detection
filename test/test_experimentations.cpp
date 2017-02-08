@@ -28,7 +28,7 @@ TEST_CASE("Visualize local noise", "[exp]") {
         out << f << " ";
     }
     out.close();
-    display_and_block(Mat_<float>(noise / 15.f));
+    display_blocking(Mat_<float>(noise / 15.f));
 }
 
 TEST_CASE("NNF consistency", "[exp]") {

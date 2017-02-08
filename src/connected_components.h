@@ -159,7 +159,7 @@ inline Mat_<Vec3b> connected_comnents_to_image(const Mat_<int> &labels) {
 }
 
 inline void display_labels(const Mat_<int> &labels) {
-    display_and_block(connected_comnents_to_image(labels));
+    display_blocking(connected_comnents_to_image(labels));
 }
 
 

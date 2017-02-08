@@ -26,6 +26,7 @@ include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/test
         ${CMAKE_CURRENT_SOURCE_DIR}/patch_match/include
         ${CMAKE_CURRENT_SOURCE_DIR}/patch_match/core/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/cv-utils/include
 )
 
 
