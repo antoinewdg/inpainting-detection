@@ -5,7 +5,7 @@ void Detector::_perform_patch_match() {
     OffsetMap offset_map(m_image.size());
     DistanceMap distance_map(m_image.size());
     PatchServer patches(m_image.size(), P);
-    PatchDistance<P> patch_distance(m_image, 20);
+    PatchDistance<P> patch_distance(m_image, MIN_PATCH_OFFSET);
 
     Matcher matcher(patches, patches, patch_distance, offset_map, distance_map);
     matcher.initialize_offset_map_randomly();
@@ -55,6 +55,11 @@ bool Detector::_is_patch_symmetric(int i, int j) {
     }
     Vec2i p(i, j);
     Vec2i q = m_offset_map(p) + p;
+    int a = p[0] - q[0];
+    int b = p[1] - q[1];
+    if (a * a + b * b <= (MIN_PATCH_OFFSET + 5) * (MIN_PATCH_OFFSET + 5)) {
+        return false;
+    }
     Vec2i p_bis = m_offset_map(q) + q;
     return p_bis == p;
 }

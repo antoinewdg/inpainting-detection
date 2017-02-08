@@ -22,6 +22,7 @@ class Detector {
 public:
     static constexpr int P = 5;
     static constexpr float VARIANCE_THRESHOLD = 0.f;//49.f / 25.f;
+    static constexpr unsigned int MIN_PATCH_OFFSET = 20;
     typedef pm::opencv::WholeImagePatches PatchServer;
     typedef pm::opencv::OffsetMap2D OffsetMap;
     typedef pm::opencv::DistanceMap2d<int> DistanceMap;
