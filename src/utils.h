@@ -24,6 +24,10 @@ using std::vector;
 
 typedef cv::Vec<uchar, 15> Vec15b;
 
+constexpr int PATCH_SIZE = 5;
+constexpr unsigned int MIN_PATCH_OFFSET = 20;
+constexpr bool SAVE_PATCH_MATCH = true;
+
 template<class T>
 Mat_<T> load_from_yaml(string filename) {
     cv::FileStorage fs(filename, cv::FileStorage::READ);

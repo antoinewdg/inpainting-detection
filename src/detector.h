@@ -15,6 +15,7 @@
 #include "patch_match_core/patch_matcher.h"
 #include "patch_match_opencv/adapters.h"
 
+#include "offset_histogram.h"
 #include "connected_components.h"
 
 class Detector {
@@ -23,6 +24,7 @@ public:
     static constexpr int P = 5;
     static constexpr float VARIANCE_THRESHOLD = 0.f;//49.f / 25.f;
     static constexpr unsigned int MIN_PATCH_OFFSET = 20;
+    static constexpr unsigned int MIN_CONNECTED_AREA = 100;
     typedef pm::opencv::WholeImagePatches PatchServer;
     typedef pm::opencv::OffsetMap2D OffsetMap;
     typedef pm::opencv::DistanceMap2d<int> DistanceMap;
@@ -44,10 +46,13 @@ public:
 
         _compute_or_load_patch_match();
         _perform_std_dev();
-        _perform_connected_components();
         _perform_symmetry_map();
 //        _perform_granulometry();
-        _perform_suspicious_zones();
+//        _perform_suspicious_zones();
+
+//        _perform_connected_components();
+//        _perform_symmetry_coherence();
+        _perform_offset_hist();
 //        _perform_distance_hist();
 //        _perform_noise_estimation();
 //        _perform_distance_map();
@@ -93,6 +98,13 @@ public:
 
     void _perform_distance_map();
 
+    void _perform_symmetry_coherence();
+
+    void _perform_offset_hist();
+
+    Mat_<bool> _check_offset_relevance(int i, Vec2i offset);
+    Mat_<bool> _check_bidir_offset_relevance(Vec2i offset);
+
     Mat_<Vec3b> m_image;
     string m_name;
     Mat_<Vec2i> m_offset_map;
@@ -104,6 +116,8 @@ public:
 
 private:
     bool _is_patch_symmetric(int i, int j);
+
+    int _count_coherence(int i, int j);
 };
 
 #endif //INPAINTING_DECTECTION_DECTECTOR_H

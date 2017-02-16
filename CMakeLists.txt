@@ -10,6 +10,10 @@ set(SOURCE_FILES
         src/detector.h src/detector.cpp
         src/patch_distance.h
         src/misc.h src/misc.cpp
+        src/offset_histogram.h
+        src/disk_cache.h src/disk_cache.cpp
+        src/nnf.h src/nnf.cpp
+        src/inpainting_detector.h src/inpainting_detector.cpp
         )
 
 set(TEST_FILES

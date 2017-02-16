@@ -27,8 +27,8 @@ void Detector::_perform_patch_match() {
     m_distance_map = distance_map.to_mat();
 
 
-//    write_to_yaml(_get_out_filename("offsets", "yml"), m_offset_map);
-//    write_to_yaml(_get_out_filename("distances", "yml"), m_distance_map);
+    write_to_yaml(_get_out_filename("offsets", "yml"), m_offset_map);
+    write_to_yaml(_get_out_filename("distances", "yml"), m_distance_map);
 //    save_to_txt(_get_out_filename("distances", "txt"), m_distance_map);
 
 }
@@ -74,7 +74,7 @@ void Detector::_perform_symmetry_map() {
 
 
     string filename = _get_out_filename("symmetry_map", "png");
-    cv::imwrite(filename, 255 * m_symmetry_map);
+//    cv::imwrite(filename, 255 * m_symmetry_map);
 
 
 }
@@ -228,6 +228,13 @@ void Detector::_perform_connected_components() {
     ConnectedComponentsFinder<Vec2i> finder(m_offset_map);
     m_connected_components = finder.get_connected_components();
     auto image = connected_comnents_to_image(m_connected_components);
+    for (int i = 0; i < image.rows; i++) {
+        for (int j = 0; j < image.cols; j++) {
+            if (!m_symmetry_map(i, j)) {
+                image(i, j) = Vec3b(0, 0, 0);
+            }
+        }
+    }
     string filename = _get_out_filename("connected_components", "png");
     cv::imwrite(filename, image);
 }
@@ -256,4 +263,157 @@ void Detector::_perform_distance_map() {
 
     string name = _get_out_filename("suspicious", "png", "_dm");
     cv::imwrite(name, out);
+}
+
+int Detector::_count_coherence(int i, int j) {
+    int c = 0;
+    auto offset = m_offset_map(i, j);
+    for (int k = -2; k <= 2; k++) {
+        for (int l = -2; l <= 2; l++) {
+            if (m_offset_map(i + k, j + l) == offset && m_symmetry_map(i + k, j + l)) {
+                c += 1;
+            }
+        }
+    }
+    return c;
+}
+
+void Detector::_perform_symmetry_coherence() {
+    Mat_<float> coherence(m_symmetry_map.size(), 0.f);
+    for (int i = 2; i < m_distance_map.rows - 2; i++) {
+        for (int j = 2; j < m_distance_map.cols - 2; j++) {
+            coherence(i, j) = float(_count_coherence(i, j)) / 25;
+        }
+    }
+
+    string name = _get_out_filename("coherence");
+    cv::imwrite(name, 255 * coherence);
+}
+
+
+float get_norm_penalization(Vec2i o) {
+    float n = std::sqrt(float(o[0]) * o[0] + o[1] * o[1]);
+    return 1.f / (1.f + std::exp(0.146f * (25.f - n)));
+}
+
+float get_angle_penalization(Vec2i o) {
+    if (std::abs(o[0]) <= 1 || std::abs(o[1]) <= 1) {
+        return 0.5f;
+    }
+    return 1.f;
+}
+
+float get_penalization(Vec2i o) {
+    return get_norm_penalization(o) * get_angle_penalization(o);
+}
+
+void Detector::_perform_offset_hist() {
+//    OffsetHistogram oh(m_offset_map);
+//    Mat_<float> hist = oh.build_hist();
+//    string name = _get_out_filename("offset_hist");
+//    cv::imwrite(name, 255 * hist);
+
+    int d = 2 * 1 + 1;
+    auto struct_el = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(d, d));
+    Mat_<bool> opening;
+    cv::morphologyEx(m_symmetry_map, opening, cv::MORPH_OPEN, struct_el);
+
+    Mat_<Vec2i> sym_offsets(m_offset_map.size(), Vec2i(0, 0));
+    for_each_patch<5>(m_offset_map, [&](int i, int j) {
+        if (opening(i, j)) {
+            sym_offsets(i, j) = m_offset_map(i, j);
+        }
+    });
+
+    OffsetHistogram ohb(sym_offsets);
+    auto hist = ohb.build_hist();
+
+//    for_each_pixel(hist, [&](int i, int j, ))
+    auto name = _get_out_filename("offset_hist_sym");
+    cv::imwrite(name, 255 * hist);
+
+    Mat_<bool> detection_mask(m_image.size(), false);
+
+    auto values = ohb.get_sorted_values();
+    for (int k = 0; k < std::min(int(values.size()), 5); k++) {
+        auto o = values[k].first;
+
+        auto rel = _check_bidir_offset_relevance(o);
+        if (k + 1 < values.size()) {
+            auto o2 = values[k + 1].first;
+            if (std::abs(o[0] - o2[0]) + std::abs(o[1] - o2[1]) == 1) {
+                rel = rel + _check_bidir_offset_relevance(o2);
+                k++;
+            }
+        }
+        string fname = _get_out_filename("relevant_offset", ".png", "_" + std::to_string(k));
+        cv::imwrite(fname, 255 * rel);
+        ConnectedComponentsFinder<bool> finder(rel);
+        auto cc = finder.get_connected_components();
+        vector<int> areas = finder.get_areas_as_vector_without_bg(false);
+        vector<int> indexes(areas.size(), 0);
+        for (int i = 0; i < indexes.size(); i++) { indexes[i] = i; }
+        auto it = std::max_element(indexes.begin(), indexes.end(), [&](int i, int j) { return areas[i] < areas[j]; });
+
+//        cout << o << "  " << get_angle_penalization(o) << " area: " << areas[*it] << endl;
+//        display_blocking(rel);
+        float alpha = get_penalization(o);
+        if (alpha * areas[*it] > MIN_CONNECTED_AREA) {
+
+            for_each_pixel(detection_mask, [&](int i, int j, bool &d) {
+                if (cc(i, j) == *it) {
+                    detection_mask(i, j) = true;
+                    detection_mask(i + o[0], j + o[1]) = true;
+                }
+            });
+        }
+
+    }
+
+//    display_blocking(detection_mask);
+
+    name = _get_out_filename("detection_mask");
+//    display_blocking(detection_mask);
+    cv::imwrite(name, detection_mask * 255);
+
+//    std::ofstream out(name);
+//
+//    for (auto p : values) {
+//        out << p.second << " ";
+//    }
+//    out.close();
+}
+
+Mat_<bool> Detector::_check_offset_relevance(int k, Vec2i o) {
+    PatchDistance<P> patch_distance(m_image, MIN_PATCH_OFFSET);
+    Mat_<bool> relevance(m_offset_map.size(), false);
+    int i_min = std::max(2, 2 - o[0]);
+    int i_max = std::min(m_image.rows - 2 - o[0], m_image.rows - 2);
+    int j_min = std::max(2, 2 - o[1]);
+    int j_max = std::min(m_image.cols - 2 - o[1], m_image.cols - 2);
+
+    for (int i = i_min; i < i_max; i++) {
+        for (int j = j_min; j < j_max; j++) {
+            Vec2i p(i, j);
+            Vec2i q = p + o;
+            float d = patch_distance(p, q, 4 * m_distance_map(p));
+            relevance(i, j) = d / m_distance_map(p) <= 1;
+        }
+    }
+
+//    display_blocking(relevance);
+    return relevance;
+}
+
+Mat_<bool> Detector::_check_bidir_offset_relevance(Vec2i o) {
+    auto rel = _check_offset_relevance(0, o);
+    auto rev = _check_offset_relevance(0, -o);
+
+    for_each_pixel(rel, [&](int i, int j, bool &b) {
+        if (b && !rev(Vec2i(i, j) + o)) {
+            b = false;
+        }
+    });
+
+    return rel;
 }

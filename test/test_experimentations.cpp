@@ -3,6 +3,7 @@
 
 #include "catch.hpp"
 #include "detector.h"
+#include "inpainting_detector.h"
 #include "connected_components.h"
 
 
@@ -12,8 +13,9 @@ TEST_CASE("Test detector", "[exp]") {
     string name;
     while (std::getline(index, name)) {
         cout << name << endl;
-        Detector detector(name);
-        detector.perform_operations();
+        DiskCache cache(name);
+        InpaintingDetector detector(cache);
+//        detector.perform_operations();
     }
 
 }

@@ -33,15 +33,15 @@ TEST_CASE("Connected components", "[unit]") {
         }
     }
 
-    SECTION("get_areas_as_vector"){
+    SECTION("get_areas_as_vector") {
         vector<int> areas = finder.get_areas_as_vector();
-        REQUIRE(areas[labels(0,0)] == 137);
-        REQUIRE(areas[labels(0,12)] == 21);
-        REQUIRE(areas[labels(6,14)] == 18);
-        REQUIRE(areas[labels(10,10)] == 27);
-        REQUIRE(areas[labels(14,0)] == 14);
-        REQUIRE(areas[labels(14,7)] == 38);
-        REQUIRE(areas[labels(15,13)] == 1);
+        REQUIRE(areas[labels(0, 0)] == 137);
+        REQUIRE(areas[labels(0, 12)] == 21);
+        REQUIRE(areas[labels(6, 14)] == 18);
+        REQUIRE(areas[labels(10, 10)] == 27);
+        REQUIRE(areas[labels(14, 0)] == 14);
+        REQUIRE(areas[labels(14, 7)] == 38);
+        REQUIRE(areas[labels(15, 13)] == 1);
     }
 
 
