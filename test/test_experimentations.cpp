@@ -15,7 +15,6 @@ TEST_CASE("Test detector", "[exp]") {
         cout << name << endl;
         DiskCache cache(name);
         InpaintingDetector detector(cache);
-//        detector.perform_operations();
     }
 
 }

@@ -10,9 +10,11 @@
 #include "nnf.h"
 
 class InpaintingDetector {
+    static constexpr int P = PATCH_SIZE;
 public:
     InpaintingDetector(DiskCache &disk_cache);
 
+    vector<std::pair<float, Vec2i>> get_dominant_offsets();
 private:
     DiskCache &m_disk_cache;
 
