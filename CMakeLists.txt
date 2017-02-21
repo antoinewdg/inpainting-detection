@@ -7,7 +7,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 set(SOURCE_FILES
         src/utils.h
         src/connected_components.h
-        src/detector.h src/detector.cpp
         src/patch_distance.h
         src/misc.h src/misc.cpp
         src/offset_histogram.h
@@ -51,3 +50,7 @@ if (Boost_FOUND)
 endif ()
 
 TARGET_LINK_LIBRARIES(run_tests ${TARGET_LIBS})
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(run_tests Threads::Threads)

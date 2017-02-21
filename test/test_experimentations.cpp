@@ -1,8 +1,8 @@
 #include <fstream>
 #include <sstream>
+#include <thread>
 
 #include "catch.hpp"
-#include "detector.h"
 #include "inpainting_detector.h"
 #include "connected_components.h"
 
@@ -11,12 +11,65 @@ TEST_CASE("Test detector", "[exp]") {
 
     std::ifstream index("../files/in/index.txt");
     string name;
+
+    std::ofstream out("../files/out/scores.txt");
     while (std::getline(index, name)) {
         cout << name << endl;
+        out << name;
         DiskCache cache(name);
         InpaintingDetector detector(cache);
+        auto dominant = detector.get_dominant_offsets();
+        dominant.resize(1);
+        for (auto p : dominant) {
+            float score = detector.perform_detection(p.second);
+            out << " " << score;
+        }
+        out << endl;
     }
 
+    out.close();
+
+}
+
+void call_from_thread(int tid, vector<string> names) {
+
+//    cout << "Launching thread" << tid << endl;
+    std::ofstream out("../files/out/scores_" + std::to_string(tid) + ".txt");
+    for (string name : names) {
+        cout << name << " -- " << tid << endl;
+        DiskCache cache(name);
+        InpaintingDetector detector(cache);
+        auto dominant = detector.get_dominant_offsets();
+        dominant.resize(1);
+        for (auto p : dominant) {
+            float score = detector.perform_detection(p.second);
+            out << name << " " << score;
+        }
+        out << endl;
+    }
+}
+
+TEST_CASE("Parallel", "[exp]") {
+    const int N = 8;
+    std::thread t[N];
+
+    vector<vector<string>> names(N);
+    std::ifstream index("../files/in/index.txt");
+
+    string name;
+    int l = 0;
+    while (std::getline(index, name)) {
+        names[l % N].push_back(name);
+        l++;
+    }
+
+    for (int i = 0; i < N; i++) {
+        t[i] = std::thread(call_from_thread, i, names[i]);
+    }
+
+    for (int i = 0; i < N; i++) {
+        t[i].join();
+    }
 }
 
 TEST_CASE("Visualize local noise", "[exp]") {
@@ -30,54 +83,4 @@ TEST_CASE("Visualize local noise", "[exp]") {
     }
     out.close();
     display_blocking(Mat_<float>(noise / 15.f));
-}
-
-TEST_CASE("NNF consistency", "[exp]") {
-
-    std::ifstream index("../files/in/index.txt");
-    string name;
-    while (std::getline(index, name)) {
-        cout << name << endl;
-        Detector detector(name);
-        detector._compute_or_load_patch_match();
-        for (int i = 2; i < detector.m_image.rows - 2; i++) {
-            for (int j = 2; j < detector.m_image.cols - 2; j++) {
-                Vec2i p(i, j);
-                auto q = detector.m_offset_map(p) + p;
-                if (q[0] < 2 || q[1] < 2 || q[0] >= detector.m_image.rows - 2 || q[1] >= detector.m_image.cols - 2) {
-                    FAIL("q=" << q << " is not in NNF");
-                }
-            }
-        }
-
-    }
-
-}
-
-TEST_CASE("Symmetry consistency", "[exp]") {
-
-    std::ifstream index("../files/in/index.txt");
-    string name;
-    while (std::getline(index, name)) {
-        cout << name << endl;
-        Detector detector(name);
-        detector._compute_or_load_patch_match();
-        detector._perform_std_dev();
-        detector._perform_symmetry_map();
-        for (int i = 2; i < detector.m_image.rows - 2; i++) {
-            for (int j = 2; j < detector.m_image.cols - 2; j++) {
-                if (!detector.m_symmetry_map(i, j)) {
-                    continue;
-                }
-                Vec2i p(i, j);
-                auto q = detector.m_offset_map(p) + p;
-                auto p_bis = detector.m_offset_map(q) + q;
-                REQUIRE(detector.m_symmetry_map(q));
-                REQUIRE(p_bis == p);
-
-            }
-        }
-
-    }
-
 }

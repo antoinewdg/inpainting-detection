@@ -26,7 +26,10 @@ typedef cv::Vec<uchar, 15> Vec15b;
 
 constexpr int PATCH_SIZE = 5;
 constexpr unsigned int MIN_PATCH_OFFSET = 20;
-constexpr bool SAVE_PATCH_MATCH = true;
+constexpr bool SAVE_PATCH_MATCH = false;
+constexpr float RELEVANCE_FACTOR = 1.5f;
+constexpr float VARIANCE_THRESHOLD = 2.f;
+constexpr float RELEVANT_OFFSET_NORM = 25;
 
 template<class T>
 Mat_<T> load_from_yaml(string filename) {
