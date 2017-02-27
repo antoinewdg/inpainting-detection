@@ -5,7 +5,7 @@
 #include "catch.hpp"
 #include "inpainting_detector.h"
 #include "connected_components.h"
-
+#include "parameters.h"
 
 TEST_CASE("Test detector", "[exp]") {
 
@@ -18,13 +18,7 @@ TEST_CASE("Test detector", "[exp]") {
         out << name;
         DiskCache cache(name);
         InpaintingDetector detector(cache);
-        auto dominant = detector.get_dominant_offsets();
-        dominant.resize(1);
-        for (auto p : dominant) {
-            float score = detector.perform_detection(p.second);
-            out << " " << score;
-        }
-        out << endl;
+        detector.get_detection_mask();
     }
 
     out.close();
@@ -33,19 +27,13 @@ TEST_CASE("Test detector", "[exp]") {
 
 void call_from_thread(int tid, vector<string> names) {
 
-//    cout << "Launching thread" << tid << endl;
-    std::ofstream out("../files/out/scores_" + std::to_string(tid) + ".txt");
     for (string name : names) {
         cout << name << " -- " << tid << endl;
         DiskCache cache(name);
         InpaintingDetector detector(cache);
-        auto dominant = detector.get_dominant_offsets();
-        dominant.resize(1);
-        for (auto p : dominant) {
-            float score = detector.perform_detection(p.second);
-            out << name << " " << score;
-        }
-        out << endl;
+        detector.get_detection_mask();
+
+        cout << endl;
     }
 }
 

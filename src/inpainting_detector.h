@@ -5,11 +5,14 @@
 #ifndef INPAINTING_DECTECTION_INPAINTING_DETECTOR_H
 #define INPAINTING_DECTECTION_INPAINTING_DETECTOR_H
 
+#include <unordered_set>
+
 #include "utils.h"
 #include "disk_cache.h"
 #include "nnf.h"
 #include "misc.h"
 #include "connected_components.h"
+#include "parameters.h"
 
 class InpaintingDetector {
     static constexpr int P = PATCH_SIZE;
@@ -28,7 +31,9 @@ public:
 
     void compute_symmetry_map();
 
-    float perform_detection(Vec2i o);
+    Mat_<bool> get_detection_mask();
+
+    void validate_dominant_offset(Vec2i o, Mat_<bool> &detection_mask, int k);
 
 private:
     DiskCache &m_disk_cache;

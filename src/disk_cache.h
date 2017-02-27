@@ -9,6 +9,7 @@
 
 #include "utils.h"
 #include "nnf.h"
+#include "parameters.h"
 
 class DiskCache {
 public:

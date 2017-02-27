@@ -13,6 +13,7 @@ set(SOURCE_FILES
         src/disk_cache.h src/disk_cache.cpp
         src/nnf.h src/nnf.cpp
         src/inpainting_detector.h src/inpainting_detector.cpp
+        src/parameters.h src/parameters.cpp
         )
 
 set(TEST_FILES
