@@ -1,0 +1,14 @@
+report/awkward_photobomb_inpainted.png
+report/awkward_photobomb_inpainted_jpeg_20.jpg
+report/awkward_photobomb_inpainted_jpeg_30.jpg
+report/awkward_photobomb_inpainted_jpeg_40.jpg
+report/awkward_photobomb_inpainted_jpeg_50.jpg
+report/awkward_photobomb_inpainted_jpeg_60.jpg
+report/awkward_photobomb_inpainted_jpeg_70.jpg
+report/awkward_photobomb_inpainted_jpeg_80.jpg
+report/awkward_photobomb_inpainted_jpeg_90.jpg
+report/awkward_photobomb_inpainted_noise_0.02.png
+report/awkward_photobomb_inpainted_noise_0.04.png
+report/awkward_photobomb_inpainted_noise_0.06.png
+report/awkward_photobomb_inpainted_noise_0.08.png
+report/awkward_photobomb_inpainted_noise_0.1.png
