@@ -3,6 +3,8 @@
 Can detect various methods such as the one used in Photoshop, but is specifically targeted (and performs better) 
 at the patch based methods such as the one [presented in this IPOL article](http://www.ipol.im/pub/art/2015/136/).
 
+Here is [the final report](https://github.com/antoinewdg/inpainting-detection/blob/master/files/report.pdf) for the project, and here is the support for my [oral presentation](https://github.com/antoinewdg/inpainting-detection/blob/master/files/oral_presentation.pdf) (the latter is in French).
+
 ## How to build
 
 Building requires OpenCV 3.1 and Boost.
