@@ -33,6 +33,7 @@ include_directories(
 
 
 add_executable(run_tests test/main.cpp ${SOURCE_FILES} ${TEST_FILES})
+add_executable(detection src/main.cpp ${SOURCE_FILES})
 
 
 # EXTERNAL LIBRAIRIES =====================
@@ -48,8 +49,11 @@ if (Boost_FOUND)
     set(TARGET_LIBS ${TARGET_LIBS} ${Boost_LIBRARIES})
 endif ()
 
-TARGET_LINK_LIBRARIES(run_tests ${TARGET_LIBS})
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-target_link_libraries(run_tests Threads::Threads)
+set(TARGET_LIBS ${TARGET_LIBS} Threads::Threads)
+
+
+TARGET_LINK_LIBRARIES(run_tests ${TARGET_LIBS})
+TARGET_LINK_LIBRARIES(detection ${TARGET_LIBS})
