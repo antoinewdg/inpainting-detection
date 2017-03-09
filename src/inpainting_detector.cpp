@@ -4,28 +4,16 @@ InpaintingDetector::InpaintingDetector(DiskCache &disk_cache) : m_disk_cache(dis
     m_image = m_disk_cache.get_input_image();
     auto nnf_computation = [&]() { return compute_nnf(m_image); };
     std::tie(m_offset_map, m_distance_map) = m_disk_cache.get_nnf(nnf_computation);
-    compute_valid_patches();
-    compute_symmetry_map();
+    compute_non_flat_patches();
 }
 
 
-void InpaintingDetector::compute_valid_patches() {
-    m_valid_patches = Mat_<bool>(m_image.size(), false);
+void InpaintingDetector::compute_non_flat_patches() {
+    m_non_flat_patches = Mat_<bool>(m_image.size(), false);
     Mat_<float> variance = compute_patch_variance(m_image, P);
-    m_valid_patches = variance >= VARIANCE_THRESHOLD;
+    m_non_flat_patches = variance >= VARIANCE_THRESHOLD;
 }
 
-void InpaintingDetector::compute_symmetry_map() {
-    m_symmetry_map = Mat_<bool>(m_image.size(), false);
-    for_each_patch<P>(m_offset_map, [&](int i, int j) {
-        Vec2i p(i, j);
-        Vec2i q = m_offset_map(p) + p;
-        Vec2i p_bis = m_offset_map(q) + q;
-        if (p_bis == p) {
-            m_symmetry_map(p) = true;
-        }
-    });
-}
 
 
 vector<std::pair<float, Vec2i>> InpaintingDetector::get_dominant_offsets() {
@@ -34,7 +22,7 @@ vector<std::pair<float, Vec2i>> InpaintingDetector::get_dominant_offsets() {
     for_each_patch<P>(m_offset_map, [&](int i, int j) {
 
         Vec2i o = m_offset_map(i, j);
-        if (m_valid_patches(i, j)) {
+        if (m_non_flat_patches(i, j)) {
             counts(o[0] + m_image.rows, o[1] + m_image.cols)++;
         }
     });
@@ -58,6 +46,8 @@ vector<std::pair<float, Vec2i>> InpaintingDetector::get_dominant_offsets() {
 Mat_<bool> InpaintingDetector::get_offset_relevance(Vec2i o, float alpha) {
     PatchDistance<P> patch_distance(m_image, MIN_PATCH_OFFSET);
     Mat_<bool> relevance(m_offset_map.size(), false);
+
+    // Compute the needed boundaries.
     int i_min = std::max(2, 2 - o[0]);
     int i_max = std::min(m_image.rows - 2 - o[0], m_image.rows - 2);
     int j_min = std::max(2, 2 - o[1]);
@@ -68,7 +58,7 @@ Mat_<bool> InpaintingDetector::get_offset_relevance(Vec2i o, float alpha) {
             Vec2i p(i, j);
             Vec2i q = p + o;
             float d = patch_distance(p, q, int(alpha * m_distance_map(p) + 1));
-            relevance(i, j) = (d <= alpha * m_distance_map(i, j)) && m_valid_patches(i, j);
+            relevance(i, j) = (d <= alpha * m_distance_map(i, j)) && m_non_flat_patches(i, j);
         }
     }
 

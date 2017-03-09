@@ -9,7 +9,13 @@
 
 #include "utils.h"
 
-inline Mat_<Vec3b> connected_comnents_to_image(const Mat_<int> &labels) {
+/**
+ * Create an image with a random color for each label.
+ *
+ * @param labels
+ * @return
+ */
+inline Mat_<Vec3b> connected_components_to_image(const Mat_<int> &labels) {
     auto it = std::max_element(labels.begin(), labels.end());
     vector<Vec3b> colors(*it + 1);
     std::random_device r;
