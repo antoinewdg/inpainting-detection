@@ -30,10 +30,6 @@ inline Mat_<Vec3b> connected_comnents_to_image(const Mat_<int> &labels) {
     return result;
 }
 
-inline void display_labels(const Mat_<int> &labels) {
-    display_blocking(connected_comnents_to_image(labels));
-}
-
 
 struct EquivalenceTable {
 
@@ -82,6 +78,10 @@ struct EquivalenceTable {
     vector<int> uf;
 };
 
+/**
+ * Class that helps find the connected components in an image.
+ * @tparam T
+ */
 template<class T>
 class ConnectedComponentsFinder {
 
@@ -90,6 +90,11 @@ public:
     ConnectedComponentsFinder(const Mat_<T> &image) :
             image(image), labels(image.size()), current_label(0) {}
 
+    /**
+     * Get the labels of the connected components.
+     *
+     * @return
+     */
     Mat_<int> get_connected_components() {
 
         _first_pass();
@@ -98,6 +103,10 @@ public:
         return labels;
     }
 
+    /**
+     * Get the area of each connected component.
+     * @return
+     */
     vector<int> get_areas_as_vector() {
         vector<int> areas(max_unique_label + 1, 0);
         for (int i = 0; i < labels.rows; i++) {
@@ -110,6 +119,11 @@ public:
         return areas;
     }
 
+    /**
+     * Get area of each connected component except thos of value bg.
+     * @param bg
+     * @return
+     */
     vector<int> get_areas_as_vector_without_bg(T bg) {
         vector<int> areas(max_unique_label + 1, 0);
         for (int i = 0; i < labels.rows; i++) {
@@ -169,7 +183,6 @@ private:
     }
 
     void _second_pass() {
-//        eq_table.compute_unique_labels(current_label + 1);
         max_unique_label = -1;
         for (int &label : labels) {
             label = eq_table(label);

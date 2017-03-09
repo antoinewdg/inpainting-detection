@@ -23,27 +23,5 @@ Mat_<float> compute_patch_variance(Mat_<T> m, int P) {
     return variance;
 }
 
-template<class T>
-void save_to_txt(string filename, Mat_<T> m) {
-    std::ofstream out(filename);
-    for (int i = 0; i < m.rows; i++) {
-        for (int j = 0; j < m.cols; j++) {
-            out << m(i, j) << " ";
-        }
-        out << endl;
-    }
-
-    out.close();
-}
-
-float estimate_noise_level(const Mat_<Vec3b> &image);
-
-float estimate_glocal_noise_level(const Mat_<Vec3b> &image, int w = 50);
-
-Mat_<float> estimate_local_noise_level(Mat_<Vec3b> image, int w);
-
-Mat_<bool> hysteresis_filter(const Mat_<bool> &in_high, const Mat_<bool> &in_low);
-
-Mat_<bool> hysteresis_connected(const Mat_<bool> &symmetry_map, const Mat_<int> &labels);
 
 #endif //INPAINTING_DECTECTION_MISC_H

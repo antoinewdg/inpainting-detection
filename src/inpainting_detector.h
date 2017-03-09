@@ -25,8 +25,6 @@ public:
 
     Mat_<bool> get_symmetric_offset_relevance(Vec2i o, float alpha);
 
-    Mat_<bool> get_detection_mask(Vec2i o);
-
     void compute_valid_patches();
 
     void compute_symmetry_map();

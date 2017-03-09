@@ -2,8 +2,8 @@
 // Created by antoinewdg on 11/26/16.
 //
 
-#ifndef STYLIT_UTIL_H
-#define STYLIT_UTIL_H
+#ifndef INPAINTING_DETECTION_UTIL_h
+#define INPAINTING_DETECTION_UTIL_h
 
 #include <cstdlib>
 #include <iostream>
@@ -22,13 +22,6 @@ using namespace cvu;
 
 using std::vector;
 
-typedef cv::Vec<uchar, 15> Vec15b;
-
-constexpr int PATCH_SIZE = 5;
-constexpr unsigned int MIN_PATCH_OFFSET = 20;
-constexpr float RELEVANCE_FACTOR = 1.5f;
-constexpr float VARIANCE_THRESHOLD = 2.f;
-constexpr float RELEVANT_OFFSET_NORM = 25;
 
 template<class T>
 Mat_<T> load_from_yaml(string filename) {
@@ -45,4 +38,4 @@ void write_to_yaml(string filename, const Mat_<T> &m) {
     fs.release();
 }
 
-#endif //STYLIT_UTIL_H
+#endif //INPAINTING_DETECTION_UTIL_h

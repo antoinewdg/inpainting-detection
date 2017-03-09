@@ -7,7 +7,10 @@
 
 #include "utils.h"
 
-
+/**
+ * Radiometric distance between two patches.
+ * @tparam P patch size
+ */
 template<int P>
 class PatchDistance {
 public:
@@ -23,6 +26,17 @@ public:
         return operator()(p, q, std::numeric_limits<output_type>::max());
     }
 
+    /**
+     * Compute the distance between two patches.
+     *
+     * The offset between the patches must be big enough,
+     * else the distance if infinite.
+     *
+     * @param p
+     * @param q
+     * @param max_d maximum value of the distance, used for early stopping
+     * @return
+     */
     inline output_type operator()(const left_type &p, const right_type &q, output_type max_d) {
 
         if (_offset_too_small(p, q)) {
@@ -40,6 +54,7 @@ public:
                     d += temp * temp;
                 }
 
+                // Check for early stopping
                 if (d >= max_d) {
                     return d;
                 }

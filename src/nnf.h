@@ -13,6 +13,12 @@
 
 #include "utils.h"
 
+/**
+ * Compute the NNF of an image on itself.
+ *
+ * @param image
+ * @return the offset field and the distance map
+ */
 std::tuple<Mat_<Vec2i>, Mat_<int>> compute_nnf(const Mat_<Vec3i> &image);
 
 #endif //INPAINTING_DECTECTION_NNF_H

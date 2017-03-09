@@ -8,8 +8,7 @@ set(SOURCE_FILES
         src/utils.h
         src/connected_components.h
         src/patch_distance.h
-        src/misc.h src/misc.cpp
-        src/offset_histogram.h
+        src/misc.h
         src/disk_cache.h src/disk_cache.cpp
         src/nnf.h src/nnf.cpp
         src/inpainting_detector.h src/inpainting_detector.cpp
@@ -17,10 +16,9 @@ set(SOURCE_FILES
         )
 
 set(TEST_FILES
-        test/test_utils.h
-        test/test_connected_components.cpp
         test/test_experimentations.cpp
-        test/test_misc.cpp
+        test/test_connected_components.cpp
+        test/test_utils.h
         )
 
 

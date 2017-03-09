@@ -60,15 +60,3 @@ TEST_CASE("Parallel", "[exp]") {
     }
 }
 
-TEST_CASE("Visualize local noise", "[exp]") {
-    Mat_<Vec3b> image = load_color("../files/in/misc/beach.png");
-    Mat_<float> noise = estimate_local_noise_level(image, 20);
-
-    std::ofstream out("../files/out/noise_hist.txt");
-    out << estimate_noise_level(image) << " ";
-    for (float f : noise) {
-        out << f << " ";
-    }
-    out.close();
-    display_blocking(Mat_<float>(noise / 15.f));
-}

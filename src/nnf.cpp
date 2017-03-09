@@ -1,4 +1,5 @@
 #include "nnf.h"
+#include "parameters.h"
 
 std::tuple<Mat_<Vec2i>, Mat_<int>> compute_nnf(const Mat_<Vec3i> &image) {
     typedef pm::opencv::WholeImagePatches PatchServer;
@@ -18,6 +19,8 @@ std::tuple<Mat_<Vec2i>, Mat_<int>> compute_nnf(const Mat_<Vec3i> &image) {
     matcher.initialize_offset_map_randomly();
     matcher.iterate_n_times(5);
 
+    // Force the symmetry of the patches after the 5
+    // first iterations.
     for (Vec2i p : patches) {
         Vec2i q = p + offset_map(p);
         int d = patch_distance(q, p);

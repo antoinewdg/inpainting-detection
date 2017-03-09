@@ -18,11 +18,11 @@ file_names.sort(key=key_f)
 
 # file_names = [INPUT_DIR + '/misc/bus_sky.png']
 
-file_names = [name[len(INPUT_DIR) + 1:] for name in file_names if '_big' not in name]
+file_names = [name[len(INPUT_DIR) + 1:] for name in file_names]
 # file_names = [n for n in file_names if 'facade' not in n and 'special_case' not in n]
-
+file_names = [n for n in file_names if 'report/awkward' in n]
 # file_names = [name for name in file_names if 'jpeg_80' in name]
-file_names = [name for name in file_names if 'noise_0.04' in name]
+# file_names = [name for name in file_names if 'nature' in name]
 # file_names = [name for name in file_names if ('grip' in name and
 #                                               ('noise_0.04' in name or 'jpeg_80' in name) or 'grip/' in name)]
 # file_names = [name for name in file_names if 'grip' in name and
